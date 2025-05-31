@@ -1,0 +1,2 @@
+# Tenkaizu
+https://chatgpt.com
