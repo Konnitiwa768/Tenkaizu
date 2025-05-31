@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>カスタムアーマー表示</title>
+  <script src="https://minerrender.org/3d.js"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; }
+    #skin_container { width: 300px; height: 300px; margin: auto; }
+    input { margin: 10px; }
+  </style>
+</head>
+<body>
+  <h2>自作アーマーを3D表示</h2>
+
+  <label>Layer 1: <input type="file" id="layer1" accept="image/png"></label><br>
+  <label>Layer 2: <input type="file" id="layer2" accept="image/png"></label><br>
+  <button onclick="renderArmor()">表示</button>
+
+  <div id="skin_container"></div>
+
+  <script>
+    let armor1DataURL = null;
+    let armor2DataURL = null;
+
+    document.getElementById('layer1').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => { armor1DataURL = reader.result; };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.getElementById('layer2').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => { armor2DataURL = reader.result; };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function renderArmor() {
+      if (!armor1DataURL) {
+        alert("Layer 1 を先に選んでください！");
+        return;
+      }
+
+      // すでに描画済みなら削除して再生成
+      const oldCanvas = document.querySelector('#skin_container canvas');
+      if (oldCanvas) oldCanvas.remove();
+
+      SkinRender.init({
+        canvas: document.getElementById('skin_container'),
+        skin: null, // スキンなしでアーマーだけ
+        armor1: armor1DataURL,
+        armor2: armor2DataURL,
+        showCape: false,
+        showElytra: false,
+        controls: true,
+        autoResize: true
+      });
+    }
+  </script>
+</body>
+</html>
