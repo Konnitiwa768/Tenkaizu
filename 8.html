@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Spectrium Armor Viewer</title>
+  <script src="https://cdn.jsdelivr.net/npm/skinview3d@1.14.1/dist/skinview3d.min.js"></script>
+  <style>
+    body { text-align: center; font-family: sans-serif; }
+    #skinview3d-container { width: 300px; height: 400px; margin: auto; }
+  </style>
+</head>
+<body>
+  <h2>Spectrium Armor Viewer</h2>
+  <div id="skinview3d-container"></div>
+  <script>
+    const viewer = new skinview3d.SkinViewer({
+      canvas: document.createElement('canvas'),
+      width: 300,
+      height: 400,
+      skin: null,
+    });
+    document.getElementById('skinview3d-container').appendChild(viewer.canvas);
+
+    // アーマーテクスチャを読み込む（spectrium_1はレギンス、spectrium_2はオーバーレイ扱い）
+    Promise.all([
+      fetch('https://raw.githubusercontent.com/Konnitiwa768/astria/Battlity/resourcepack/assets/kubejs/textures/model/armor/spectrium_1.png').then(r => r.blob()),
+      fetch('https://raw.githubusercontent.com/Konnitiwa768/astria/Battlity/resourcepack/assets/kubejs/textures/model/armor/spectrium_2.png').then(r => r.blob())
+    ]).then(([blob1, blob2]) => {
+      const url1 = URL.createObjectURL(blob1);
+      const url2 = URL.createObjectURL(blob2);
+
+      // アーマーモデルを追加
+      const armor1 = new skinview3d.ArmorModel(url1);
+      const armor2 = new skinview3d.ArmorModel(url2);
+
+      viewer.loadArmorModel(armor1, 0); // layer 1
+      viewer.loadArmorModel(armor2, 1); // layer 2
+
+      viewer.update();
+    });
+  </script>
+</body>
+</html>
