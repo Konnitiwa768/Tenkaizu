@@ -1,3 +1,3 @@
 # Tenkaizu
 https://chatgpt.com
-https://konnitiwa768.github.io/Tenkaizu/4.html
+https://konnitiwa768.github.io/Tenkaizu/6.html
