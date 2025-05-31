@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>マイクラ防具表示</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #111; }
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      background: rgba(255,255,255,0.8);
+      padding: 10px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    layer_1: <input type="file" id="layer1" accept="image/*"><br>
+    layer_2: <input type="file" id="layer2" accept="image/*">
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r148/three.min.js"></script>
+  <script>
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 1000);
+    camera.position.z = 5;
+
+    const renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(3, 5, 2).normalize();
+    scene.add(light);
+
+    let textures = [null, null];
+
+    function loadTexture(index, file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const tex = new THREE.TextureLoader().load(e.target.result, () => {
+            tex.magFilter = THREE.NearestFilter;
+            tex.minFilter = THREE.NearestFilter;
+            textures[index] = tex;
+            resolve();
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function tryBuild() {
+      if (!textures[0] || !textures[1]) return;
+
+      scene.clear(); // 再描画対応
+
+      const armorParts = [];
+
+      // ヘルメット（頭） - layer_2
+      armorParts.push(createBox(1, 1, 1, 0, 2.5, 0, textures[1]));
+
+      // 胴体 - layer_1
+      armorParts.push(createBox(1.5, 1.5, 0.5, 0, 1, 0, textures[0]));
+
+      // 足 - layer_1
+      armorParts.push(createBox(1.2, 1.2, 0.5, 0, -0.5, 0, textures[0]));
+
+      // ブーツ（左右） - layer_1
+      armorParts.push(createBox(0.5, 0.5, 0.5, -0.4, -1.5, 0, textures[0]));
+      armorParts.push(createBox(0.5, 0.5, 0.5,  0.4, -1.5, 0, textures[0]));
+
+      armorParts.forEach(part => scene.add(part));
+    }
+
+    function createBox(w, h, d, x, y, z, texture) {
+      const geometry = new THREE.BoxGeometry(w, h, d);
+      const material = new THREE.MeshBasicMaterial({ map: texture });
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(x, y, z);
+      return mesh;
+    }
+
+    document.getElementById("layer1").addEventListener("change", async (e) => {
+      await loadTexture(0, e.target.files[0]);
+      tryBuild();
+    });
+
+    document.getElementById("layer2").addEventListener("change", async (e) => {
+      await loadTexture(1, e.target.files[0]);
+      tryBuild();
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      scene.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
